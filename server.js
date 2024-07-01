@@ -32,6 +32,14 @@ const userService_1 = require("./application/userService");
 const vendedorService_1 = require("./application/vendedorService");
 const appointmentService_1 = require("./application/appointmentService");
 const ImageService_1 = require("./application/ImageService");
+const mongoProductosRepository_1 = require("./adapters/persistence/mongoProductosRepository");
+const mongoAlmacenRepository_1 = require("./adapters/persistence/mongoAlmacenRepository");
+const mysqlProductosRepository_1 = require("./adapters/persistence/mysqlProductosRepository");
+const mysqlAlmacenRepository_1 = require("./adapters/persistence/mysqlAlmacenRepository");
+const productosService_1 = require("./application/productosService");
+const almacenService_1 = require("./application/almacenService");
+const productosController_1 = require("./adapters/http/productosController");
+const almacenController_1 = require("./adapters/http/almacenController");
 const app = (0, express_1.default)();
 app.use(body_parser_1.default.json());
 const upload = (0, multer_1.default)();
@@ -48,6 +56,12 @@ function startServer() {
         const mongoAppointmentRepository = new mongoAppointmentRepository_1.MongoAppointmentRepository();
         const mongoAppointmentService = new appointmentService_1.AppointmentService(mongoAppointmentRepository);
         const mongoAppointmentController = new appointmentController_1.AppointmentController(mongoAppointmentService);
+        const mongoProductosRepository = new mongoProductosRepository_1.MongoProductosRepository();
+        const mongoProductosService = new productosService_1.ProductosService(mongoProductosRepository);
+        const mongoProductosController = new productosController_1.ProductosController(mongoProductosService);
+        const mongoAlmacenRepository = new mongoAlmacenRepository_1.MongoAlmacenRepository();
+        const mongoAlmacenService = new almacenService_1.AlmacenService(mongoAlmacenRepository);
+        const mongoAlmacenController = new almacenController_1.AlmacenController(mongoAlmacenService);
         // Conectar a MySQL
         const mysqlConnection = yield (0, database_2.connectToMySQL)();
         const mysqlUserRepository = new mysqlUserRepository_1.MysqlUserRepository(mysqlConnection);
@@ -59,6 +73,12 @@ function startServer() {
         const mysqlAppointmentRepository = new mysqlAppointmentRepository_1.MysqlAppointmentRepository(mysqlConnection);
         const mysqlAppointmentService = new appointmentService_1.AppointmentService(mysqlAppointmentRepository);
         const mysqlAppointmentController = new appointmentController_1.AppointmentController(mysqlAppointmentService);
+        const mysqlProductosRepository = new mysqlProductosRepository_1.MysqlProductosRepository(mysqlConnection);
+        const mysqlProductosService = new productosService_1.ProductosService(mysqlProductosRepository);
+        const mysqlProductosController = new productosController_1.ProductosController(mysqlProductosService);
+        const mysqlAlmacenRepository = new mysqlAlmacenRepository_1.MysqlAlmacenRepository(mysqlConnection);
+        const mysqlAlmacenService = new almacenService_1.AlmacenService(mysqlAlmacenRepository);
+        const mysqlAlmacenController = new almacenController_1.AlmacenController(mysqlAlmacenService);
         // Repositorio de almacenamiento S3
         const s3StorageRepository = new S3StorageRepository_1.S3StorageRepository();
         const imageService = new ImageService_1.ImageService(s3StorageRepository);
@@ -90,6 +110,24 @@ function startServer() {
         app.get('/appointments/mysql/:id', (req, res) => mysqlAppointmentController.getAppointment(req, res));
         app.put('/appointments/mysql/:id', (req, res) => mysqlAppointmentController.updateAppointment(req, res));
         app.delete('/appointments/mysql/:id', (req, res) => mysqlAppointmentController.deleteAppointment(req, res));
+        // Rutas para Productos (MongoDB y MySQL)
+        app.post('/productos/mongo', (req, res) => mongoProductosController.createProductos(req, res));
+        app.get('/productos/mongo/:id', (req, res) => mongoProductosController.getProductos(req, res));
+        app.put('/productos/mongo/:id', (req, res) => mongoProductosController.updateProductos(req, res));
+        app.delete('/productos/mongo/:id', (req, res) => mongoProductosController.deleteProductos(req, res));
+        app.post('/productos/mysql', (req, res) => mysqlProductosController.createProductos(req, res));
+        app.get('/productos/mysql/:id', (req, res) => mysqlProductosController.getProductos(req, res));
+        app.put('/productos/mysql/:id', (req, res) => mysqlProductosController.updateProductos(req, res));
+        app.delete('/productos/mysql/:id', (req, res) => mysqlProductosController.deleteProductos(req, res));
+        // Rutas para Almacen (MongoDB y MySQL)
+        app.post('/almacen/mongo', (req, res) => mongoAlmacenController.createAlmacen(req, res));
+        app.get('/almacen/mongo/:id', (req, res) => mongoAlmacenController.getAlmacen(req, res));
+        app.put('/almacen/mongo/:id', (req, res) => mongoAlmacenController.updateAlmacen(req, res));
+        app.delete('/almacen/mongo/:id', (req, res) => mongoAlmacenController.deleteAlmacen(req, res));
+        app.post('/almacen/mysql', (req, res) => mysqlAlmacenController.createAlmacen(req, res));
+        app.get('/almacen/mysql/:id', (req, res) => mysqlAlmacenController.getAlmacen(req, res));
+        app.put('/almacen/mysql/:id', (req, res) => mysqlAlmacenController.updateAlmacen(req, res));
+        app.delete('/almacen/mysql/:id', (req, res) => mysqlAlmacenController.deleteAlmacen(req, res));
         // Rutas para Imágenes
         app.post('/images/upload', upload.single('file'), (req, res) => imageController.uploadImage(req, res));
         app.delete('/images/:key', (req, res) => imageController.deleteImage(req, res));
